@@ -1,0 +1,56 @@
+---
+title: "Codebook"
+author: "Chris Schmidt"
+date: "21/08/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Codebook for Getting and Cleaning Data Course Project
+
+This project involves accessing and wrangling a dataset into a 'tidy' format with meaningful names for both variables stored in columns as well as any observations on categorical variables.  The subject dataset is comprised of data readings from the smartphones of 30 subjects across 6 different activity classes. The following explanation of the data under consideration is drawn from the README file available with the original dataset. 
+
+The experiments have been carried out with a group of 30 volunteers within an age bracket of 19-48 years. Each person performed six activities (WALKING, WALKING_UPSTAIRS, WALKING_DOWNSTAIRS, SITTING, STANDING, LAYING) wearing a smartphone (Samsung Galaxy S II) on the waist. Using its embedded accelerometer and gyroscope, we captured 3-axial linear acceleration and 3-axial angular velocity at a constant rate of 50Hz. The experiments have been video-recorded to label the data manually. The obtained dataset has been randomly partitioned into two sets, where 70% of the volunteers was selected for generating the training data and 30% the test data.
+
+Of the 563 columns in data, only those variables that represent either mean of standard deviation were desired for analysis.  The resulting data set contains the subject id, activity being observed and the following 79 variables measured in the experiment.
+
+```{r, include=FALSE}
+library(tidyverse)
+library(data.table)
+
+#create data directory if it does not exist
+if(!file.exists("./data")){dir.create("./data")}
+
+#download data (note for zip files the mode must be set to "wb" (write binary))
+if (!file.exists("./data/UCI HAR Dataset")){
+        fileUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
+        download.file(fileUrl, "./data/HAR 20 Dataset", mode = "wb") #mode = "wb" (write binary) req for zipfile
+        unzip(zipfile = "./data/HAR 20 Dataset", exdir = "./data") #exdir argument specifies dest file path
+}
+
+#read all tables; work done on command to find appropriate colnames
+features <- fread("./data/UCI HAR Dataset/features.txt", col.names = c("index", "measurement"))
+activity_labels <- fread("./data/UCI HAR Dataset/activity_labels.txt")
+subject_test <- fread("./data/UCI HAR Dataset/test/subject_test.txt", col.names = "subject")
+X_test <- fread("./data/UCI HAR Dataset/test/X_test.txt", col.names = features[, measurement])
+y_test <- fread("./data/UCI HAR Dataset/test/y_test.txt", col.names = "activity", colClasses = "factor")
+subject_train <- fread("./data/UCI HAR Dataset/train/subject_train.txt", col.names = "subject")
+X_train <- fread("./data/UCI HAR Dataset/train/X_train.txt", col.names = features[,measurement])
+y_train <- fread("./data/UCI HAR Dataset/train/y_train.txt", col.names = "activity", colClasses = "factor")
+
+#merging all data - rbind for cols measuring same variables within implied cbind on data.table function
+data <- data.table(rbind(subject_test, subject_train), #colnames assigned above in fread to prevent
+                   rbind(y_test, y_train), #colnames such as "activity.V1" data
+                   rbind(X_test, X_train))
+
+```
+
+
+```{r}
+desired_cols <- c("subject", "activity", names(data)[grep("mean|std", names(data))])
+print (desired_cols)
+```
+
