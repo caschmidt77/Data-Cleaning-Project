@@ -49,7 +49,7 @@ data <- data[, ..desired_cols] #note: `..` 'looks up one level', ie. to global e
 # Objective 3. Use descriptive activity names for the activities in the data set
 
 #change factor labels in "activity" cols from numbers to meaningful names from activity_labels object
-data[["activity"]] <- factor(data[,activity],
+data[["activity"]] <- factor(data[["activity"]],
                              levels = activity_labels[["V1"]],
                              labels = activity_labels[["V2"]]) #note `[[]]` required in this case
 
